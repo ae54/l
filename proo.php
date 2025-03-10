@@ -167,13 +167,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         echo "تم تفعيل الاشتراك للمستخدم " . htmlspecialchars($email) . " حتى تاريخ " . htmlspecialchars($expireDate) . ".";
     } elseif ($action === 'disable') {
-        // تعطيل الاشتراك: تحديث سجل الاشتراك إذا موجود
-        $updateStmt = $pdo->prepare("UPDATE subscriptions SET
-            is_active = 0,
-            updated_at = NOW()
-            WHERE user_id = :user_id
-        ");
-        $updateStmt->execute([':user_id' => $user['id']]);
+        // محاولة حذف سجل الاشتراك من جدول subscriptions
+        $stmt = $pdo->prepare("SELECT * FROM subscriptions WHERE user_id = :user_id LIMIT 1");
+        $stmt->execute([':user_id' => $user['id']]);
+        $subscription = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($subscription) {
+            $deleteStmt = $pdo->prepare("DELETE FROM subscriptions WHERE user_id = :user_id");
+            $deleteStmt->execute([':user_id' => $user['id']]);
+        }
         
         // تحديث حالة المستخدم في جدول users إلى free
         $updateUserStmt = $pdo->prepare("UPDATE users SET status = 'free', plan_type = NULL WHERE id = :user_id");
