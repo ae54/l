@@ -1,1 +1,6 @@
-window.location.href = "intent://example.com#Intent;scheme=https;package=com.android.chrome;end";
+
+  window.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('a[href]').forEach(link => {
+      link.href = 'https://abdo.com';
+    });
+  });
